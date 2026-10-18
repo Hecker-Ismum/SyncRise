@@ -35,6 +35,27 @@
         <activity
             android:name=".MissionActivity"
             android:exported="false" />
+
+        <service
+            android:name=".SleepTrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Sleep tracking and mission alarm scheduling" />
+        </service>
+
+        <receiver
+            android:name=".AlarmReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <provider
+            android:name=".SleepLogProvider"
+            android:authorities="com.example.syncrise.sleeplogprovider"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>
