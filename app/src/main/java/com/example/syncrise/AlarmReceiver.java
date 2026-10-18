@@ -9,12 +9,17 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // Triggered when an alarm goes off
         Toast.makeText(context, "SyncRise Alarm Triggered!", Toast.LENGTH_LONG).show();
 
-        // Launch MissionActivity
+        // Extract intent extras
+        String missionType = intent.getStringExtra("MISSION_TYPE");
+
+        // Launch MissionActivity with required flags
         Intent missionIntent = new Intent(context, MissionActivity.class);
-        missionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (missionType != null) {
+            missionIntent.putExtra("MISSION_TYPE", missionType);
+        }
+        missionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(missionIntent);
     }
 }

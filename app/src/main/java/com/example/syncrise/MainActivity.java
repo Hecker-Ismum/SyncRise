@@ -59,6 +59,30 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(Intent.EXTRA_TEXT, "Here are my sleep statistics from SyncRise!");
             startActivity(Intent.createChooser(intent, "Share Stats via"));
         });
+
+        // Query SleepLogProvider to demonstrate inter-component communication
+        queryProvider();
+    }
+
+    private void queryProvider() {
+        android.net.Uri uri = android.net.Uri.parse("content://com.example.syncrise.provider/logs");
+        try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    int dateIndex = cursor.getColumnIndex("DATE");
+                    int cyclesIndex = cursor.getColumnIndex("CYCLES_COMPLETED");
+                    if (dateIndex != -1 && cyclesIndex != -1) {
+                        String date = cursor.getString(dateIndex);
+                        int cycles = cursor.getInt(cyclesIndex);
+                        Log.d(TAG, "Log: Date=" + date + ", Cycles=" + cycles);
+                    }
+                } while (cursor.moveToNext());
+            } else {
+                Log.d(TAG, "SleepLogProvider is empty.");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to query SleepLogProvider", e);
+        }
     }
 
     @Override
