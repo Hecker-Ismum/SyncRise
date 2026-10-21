@@ -16,8 +16,11 @@ public class AlarmSetupActivity extends AppCompatActivity {
         float targetCycles = getIntent().getFloatExtra("TARGET_CYCLES", 0.0f);
         binding.tvTargetCycles.setText("Target Cycles: " + targetCycles);
         
-        // Example schedule logic (you could call this from a button click)
-        // scheduleAlarm(System.currentTimeMillis() + 10000); // 10 seconds from now
+        binding.btnSchedule.setOnClickListener(v -> {
+            scheduleAlarm(System.currentTimeMillis() + 10000); // 10 seconds from now
+            android.widget.Toast.makeText(this, "Alarm Scheduled for 10s!", android.widget.Toast.LENGTH_SHORT).show();
+            finish();
+        });
     }
 
     private void scheduleAlarm(long triggerTimeMillis) {
@@ -34,7 +37,11 @@ public class AlarmSetupActivity extends AppCompatActivity {
 
         android.app.AlarmManager.AlarmClockInfo alarmClockInfo = new android.app.AlarmManager.AlarmClockInfo(triggerTimeMillis, pendingIntent);
         if (alarmManager != null) {
-            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+            try {
+                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+            } catch (SecurityException e) {
+                android.widget.Toast.makeText(this, "Exact alarm permission required!", android.widget.Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

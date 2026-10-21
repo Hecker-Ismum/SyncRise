@@ -27,6 +27,12 @@ public class MainActivity extends AppCompatActivity {
         
         Log.d(TAG, "onCreate called");
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                androidx.core.app.ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
         // Initialize RecyclerView
         binding.rvAlarms.setLayoutManager(new LinearLayoutManager(this));
         
@@ -50,6 +56,15 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, AlarmSetupActivity.class);
             intent.putExtra("TARGET_CYCLES", 4.5f);
             startActivity(intent);
+        });
+
+        // Start Sleep Tracking Service
+        binding.btnCreateAlarm.setOnLongClickListener(v -> {
+            Intent serviceIntent = new Intent(MainActivity.this, SleepTrackingService.class);
+            serviceIntent.putExtra("TARGET_CYCLES", 4.5);
+            androidx.core.content.ContextCompat.startForegroundService(MainActivity.this, serviceIntent);
+            Toast.makeText(MainActivity.this, "Sleep Tracking Started", Toast.LENGTH_SHORT).show();
+            return true;
         });
 
         // Implicit Intent to share statistics

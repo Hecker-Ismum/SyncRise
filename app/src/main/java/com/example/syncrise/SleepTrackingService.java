@@ -10,7 +10,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -69,6 +68,8 @@ public class SleepTrackingService extends Service implements SensorEventListener
             
             // Subtle movement calculation (simplified magnitude)
             double magnitude = Math.sqrt(x * x + y * y + z * z);
+            // Log magnitude to ensure it's not removed by optimizer
+            android.util.Log.d("SleepTrackingService", "Magnitude: " + magnitude);
             // In a real app, track the variance of magnitude over time to detect REM/Light/Deep sleep
 
             long elapsedMillis = System.currentTimeMillis() - startTimeMillis;
@@ -106,16 +107,14 @@ public class SleepTrackingService extends Service implements SensorEventListener
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Sleep Tracking",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "Sleep Tracking",
+                NotificationManager.IMPORTANCE_LOW
+        );
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        if (manager != null) {
+            manager.createNotificationChannel(channel);
         }
     }
 }
