@@ -19,6 +19,19 @@ public class MainActivity extends AppCompatActivity {
     private AlarmAdapter alarmAdapter;
     private ArrayList<AlarmModel> alarmList;
 
+    private final androidx.activity.result.ActivityResultLauncher<Intent> alarmSetupLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    AlarmModel newAlarm = (AlarmModel) result.getData().getSerializableExtra("NEW_ALARM");
+                    if (newAlarm != null) {
+                        alarmList.add(newAlarm);
+                        alarmAdapter.notifyItemInserted(alarmList.size() - 1);
+                        binding.rvAlarms.smoothScrollToPosition(alarmList.size() - 1);
+                        Toast.makeText(this, "Alarm set for " + newAlarm.getTime(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,24 +51,22 @@ public class MainActivity extends AppCompatActivity {
         
         // Mock Data for Alarms
         alarmList = new ArrayList<>();
-        alarmList.add(new AlarmModel("1", "06:30", true, 4.5, "Math Problem", true));
-        alarmList.add(new AlarmModel("2", "07:00", false, 0.0, "Shake", false));
-        alarmList.add(new AlarmModel("3", "08:15", true, 6.0, "Memory Match", true));
+        alarmList.add(new AlarmModel("1", "06:30", "Morning Class", true, 4.5, "Math Problem", true));
+        alarmList.add(new AlarmModel("2", "07:00", "Workout", false, 0.0, "None", false));
+        alarmList.add(new AlarmModel("3", "08:15", "Weekend Wakeup", true, 6.0, "Barcode", true));
         
         // Initialize Adapter with OnAlarmToggleListener
         alarmAdapter = new AlarmAdapter(alarmList, (alarm, isChecked) -> {
             String status = isChecked ? "enabled" : "disabled";
             Toast.makeText(MainActivity.this, "Alarm " + alarm.getTime() + " " + status, Toast.LENGTH_SHORT).show();
-            // In a real app, update database or reschedule AlarmManager here
         });
         
         binding.rvAlarms.setAdapter(alarmAdapter);
 
-        // Explicit Intent to AlarmSetupActivity
+        // Explicit Intent to AlarmSetupActivity using ActivityResultLauncher
         binding.btnCreateAlarm.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AlarmSetupActivity.class);
-            intent.putExtra("TARGET_CYCLES", 4.5f);
-            startActivity(intent);
+            alarmSetupLauncher.launch(intent);
         });
 
         // Start Sleep Tracking Service

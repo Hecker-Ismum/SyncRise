@@ -54,7 +54,11 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
 
         public void bind(AlarmModel alarm, OnAlarmToggleListener listener) {
             binding.tvAlarmTime.setText(alarm.getTime());
-            binding.tvMissionType.setText("Mission: " + alarm.getMissionType());
+            if (alarm.getLabel() != null && !alarm.getLabel().isEmpty()) {
+                binding.tvMissionType.setText(alarm.getLabel() + " • Mission: " + alarm.getMissionType());
+            } else {
+                binding.tvMissionType.setText("Mission: " + alarm.getMissionType());
+            }
 
             // Update badge depending on alarm type
             if (alarm.isCycleAlarm()) {

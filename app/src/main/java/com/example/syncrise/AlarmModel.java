@@ -1,8 +1,12 @@
 package com.example.syncrise;
 
-public class AlarmModel {
+import java.io.Serializable;
+
+public class AlarmModel implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private String time;
+    private String label;
     private boolean isCycleAlarm;
     private double cycleDurationHours;
     private String missionType;
@@ -13,9 +17,10 @@ public class AlarmModel {
     }
 
     // Parameterized constructor
-    public AlarmModel(String id, String time, boolean isCycleAlarm, double cycleDurationHours, String missionType, boolean isEnabled) {
+    public AlarmModel(String id, String time, String label, boolean isCycleAlarm, double cycleDurationHours, String missionType, boolean isEnabled) {
         this.id = id;
         this.time = time;
+        this.label = label;
         this.isCycleAlarm = isCycleAlarm;
         this.cycleDurationHours = cycleDurationHours;
         this.missionType = missionType;
@@ -37,6 +42,14 @@ public class AlarmModel {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public boolean isCycleAlarm() {
