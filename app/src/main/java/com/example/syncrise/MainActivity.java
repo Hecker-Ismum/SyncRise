@@ -57,8 +57,14 @@ public class MainActivity extends AppCompatActivity {
         
         // Initialize Adapter with OnAlarmToggleListener
         alarmAdapter = new AlarmAdapter(alarmList, (alarm, isChecked) -> {
-            String status = isChecked ? "enabled" : "disabled";
-            Toast.makeText(MainActivity.this, "Alarm " + alarm.getTime() + " " + status, Toast.LENGTH_SHORT).show();
+            alarm.setEnabled(isChecked);
+            if (isChecked) {
+                scheduleAlarmForModel(alarm);
+                Toast.makeText(MainActivity.this, "Alarm " + alarm.getTime() + " enabled", Toast.LENGTH_SHORT).show();
+            } else {
+                cancelAlarmForModel(alarm);
+                Toast.makeText(MainActivity.this, "Alarm " + alarm.getTime() + " disabled", Toast.LENGTH_SHORT).show();
+            }
         });
         
         binding.rvAlarms.setAdapter(alarmAdapter);
@@ -88,6 +94,61 @@ public class MainActivity extends AppCompatActivity {
 
         // Query SleepLogProvider to demonstrate inter-component communication
         queryProvider();
+    }
+
+    private void scheduleAlarmForModel(AlarmModel alarm) {
+        try {
+            String[] parts = alarm.getTime().split(":");
+            int hour = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+
+            java.util.Calendar calendar = java.util.Calendar.getInstance();
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, hour);
+            calendar.set(java.util.Calendar.MINUTE, minute);
+            calendar.set(java.util.Calendar.SECOND, 0);
+            calendar.set(java.util.Calendar.MILLISECOND, 0);
+
+            if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
+                calendar.add(java.util.Calendar.DAY_OF_YEAR, 1);
+            }
+
+            android.app.AlarmManager alarmManager = (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
+            Intent intent = new Intent(this, AlarmReceiver.class);
+            intent.putExtra("MISSION_TYPE", alarm.getMissionType());
+            intent.putExtra("ALARM_ID", alarm.getId());
+
+            android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(
+                    this,
+                    alarm.getId().hashCode(),
+                    intent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+            );
+
+            android.app.AlarmManager.AlarmClockInfo alarmClockInfo = new android.app.AlarmManager.AlarmClockInfo(calendar.getTimeInMillis(), pendingIntent);
+            if (alarmManager != null) {
+                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error scheduling alarm model", e);
+        }
+    }
+
+    private void cancelAlarmForModel(AlarmModel alarm) {
+        try {
+            android.app.AlarmManager alarmManager = (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
+            Intent intent = new Intent(this, AlarmReceiver.class);
+            android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(
+                    this,
+                    alarm.getId().hashCode(),
+                    intent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+            );
+            if (alarmManager != null) {
+                alarmManager.cancel(pendingIntent);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error canceling alarm model", e);
+        }
     }
 
     private void queryProvider() {

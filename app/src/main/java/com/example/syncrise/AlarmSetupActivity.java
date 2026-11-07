@@ -4,7 +4,9 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -76,6 +78,20 @@ public class AlarmSetupActivity extends AppCompatActivity {
     }
 
     private void saveAndScheduleAlarm() {
+        // Clear focus on TimePicker to commit typed edits
+        binding.timePicker.clearFocus();
+
+        // Check Exact Alarm permission for Android 12+ (API 31+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+                Toast.makeText(this, "Please grant Exact Alarm permission for SyncRise to fire alarms.", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
+
         int hour = binding.timePicker.getHour();
         int minute = binding.timePicker.getMinute();
 
@@ -107,7 +123,7 @@ public class AlarmSetupActivity extends AppCompatActivity {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        // If time is before now, schedule for tomorrow
+        // If time is before or equal to now, schedule for tomorrow
         if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }

@@ -1,61 +1,82 @@
 package com.example.syncrise;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
     private static final String CHANNEL_ID = "AlarmChannel";
+    private static final String TAG = "AlarmReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "AlarmReceiver triggered!");
         Toast.makeText(context, "SyncRise Alarm Triggered!", Toast.LENGTH_LONG).show();
 
         // Extract intent extras
         String missionType = intent.getStringExtra("MISSION_TYPE");
 
-        // Launch MissionActivity with required flags
+        // Prepare MissionActivity intent
         Intent missionIntent = new Intent(context, MissionActivity.class);
         if (missionType != null) {
             missionIntent.putExtra("MISSION_TYPE", missionType);
         }
-        missionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        missionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK 
+                | Intent.FLAG_ACTIVITY_CLEAR_TOP 
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        // Android 10+ requires Full-Screen Intent from background
-        android.app.PendingIntent fullScreenPendingIntent = android.app.PendingIntent.getActivity(
+        // 1. Direct Start Activity (Works seamlessly when screen is ON / unlocked)
+        try {
+            context.startActivity(missionIntent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start MissionActivity directly", e);
+        }
+
+        // 2. FullScreen Intent Notification (Wakes device screen if locked or app in background)
+        PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(
                 context,
-                0,
+                (int) System.currentTimeMillis(),
                 missionIntent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         createNotificationChannel(context);
 
-        androidx.core.app.NotificationCompat.Builder builder = new androidx.core.app.NotificationCompat.Builder(context, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
                 .setContentTitle("SyncRise Alarm")
-                .setContentText("Wake up! Mission time.")
-                .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
-                .setCategory(androidx.core.app.NotificationCompat.CATEGORY_ALARM)
+                .setContentText("Wake up! Mission: " + (missionType != null ? missionType : "Default"))
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setFullScreenIntent(fullScreenPendingIntent, true)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setOngoing(true);
 
-        android.app.NotificationManager notificationManager = (android.app.NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
             notificationManager.notify(1001, builder.build());
         }
     }
 
     private void createNotificationChannel(Context context) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Alarm Notifications",
-                    android.app.NotificationManager.IMPORTANCE_HIGH
+                    NotificationManager.IMPORTANCE_HIGH
             );
-            android.app.NotificationManager manager = context.getSystemService(android.app.NotificationManager.class);
+            channel.setBypassDnd(true);
+            channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
