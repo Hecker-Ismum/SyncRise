@@ -37,6 +37,11 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize">
         </activity>
+
+        <activity
+            android:name=".SleepLogsActivity"
+            android:exported="false" />
+
         <activity
             android:name=".AlarmSetupActivity"
             android:exported="false" />

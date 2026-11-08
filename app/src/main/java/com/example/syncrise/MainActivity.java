@@ -148,6 +148,11 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(Intent.EXTRA_TEXT, "Here are my sleep statistics from SyncRise!");
             startActivity(Intent.createChooser(intent, "Share Stats via"));
         });
+        
+        // Explicit Intent to open Sleep History Activity
+        binding.btnViewSleepLogs.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, SleepLogsActivity.class));
+        });
 
         // Query SleepLogProvider to demonstrate inter-component communication
         queryProvider();
