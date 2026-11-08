@@ -47,6 +47,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".SoundscapeActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".AlarmSetupActivity"
             android:exported="false" />
         <activity

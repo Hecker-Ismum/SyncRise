@@ -196,6 +196,9 @@ public class MainActivity extends AppCompatActivity {
         // Explicit Intent to open Analytics/Trends Activity
         binding.btnViewAnalytics.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AnalyticsActivity.class)));
 
+        // Explicit Intent to open Soundscapes Activity
+        binding.btnSoundscape.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SoundscapeActivity.class)));
+
         // Query SleepLogProvider to demonstrate inter-component communication
         queryProvider();
     }

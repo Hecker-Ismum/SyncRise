@@ -90,6 +90,65 @@ public class MissionActivity extends AppCompatActivity {
         } else {
             setupMathMission();
         }
+        
+        setupSnoozeRules();
+    }
+
+    private void setupSnoozeRules() {
+        int snoozeCount = getIntent().getIntExtra("SNOOZE_COUNT", 0);
+        int snoozeDelayMins = 0;
+
+        if ("Barcode".equalsIgnoreCase(missionType)) {
+            // Hard Mission: No snooze
+            binding.btnSnooze.setVisibility(View.GONE);
+        } else if ("Math Problem".equalsIgnoreCase(missionType)) {
+            // Medium Mission: 1 snooze (5 mins)
+            if (snoozeCount == 0) snoozeDelayMins = 5;
+            else binding.btnSnooze.setVisibility(View.GONE);
+        } else {
+            // Easy Mission (None): Shrinking snooze (5m -> 3m -> 1m)
+            if (snoozeCount == 0) snoozeDelayMins = 5;
+            else if (snoozeCount == 1) snoozeDelayMins = 3;
+            else if (snoozeCount == 2) snoozeDelayMins = 1;
+            else binding.btnSnooze.setVisibility(View.GONE);
+        }
+
+        if (snoozeDelayMins > 0) {
+            binding.btnSnooze.setVisibility(View.VISIBLE);
+            binding.btnSnooze.setText("Snooze (" + snoozeDelayMins + "m)");
+            int finalSnoozeDelayMins = snoozeDelayMins;
+            binding.btnSnooze.setOnClickListener(v -> snoozeAlarm(finalSnoozeDelayMins, snoozeCount));
+        }
+    }
+
+    private void snoozeAlarm(int delayMins, int currentSnoozeCount) {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+
+        android.app.AlarmManager am = (android.app.AlarmManager) getSystemService(android.content.Context.ALARM_SERVICE);
+        android.content.Intent intent = new android.content.Intent(this, AlarmReceiver.class);
+        intent.putExtra("MISSION_TYPE", missionType);
+        intent.putExtra("SNOOZE_COUNT", currentSnoozeCount + 1);
+
+        android.app.PendingIntent pi = android.app.PendingIntent.getBroadcast(
+                this,
+                (int) System.currentTimeMillis(),
+                intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+        );
+
+        if (am != null) {
+            try {
+                am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + (delayMins * 60 * 1000L), pi);
+                Toast.makeText(this, "Snoozed for " + delayMins + " minutes", Toast.LENGTH_SHORT).show();
+            } catch (SecurityException e) {
+                Toast.makeText(this, "Permission required for exact alarms!", Toast.LENGTH_LONG).show();
+            }
+        }
+        finish();
     }
 
     private void startAlarmAudio() {

@@ -32,12 +32,15 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         // Extract intent extras
         String missionType = intent.getStringExtra("MISSION_TYPE");
+        int snoozeCount = intent.getIntExtra("SNOOZE_COUNT", 0);
 
         // Prepare MissionActivity intent
         Intent missionIntent = new Intent(context, MissionActivity.class);
         if (missionType != null) {
             missionIntent.putExtra("MISSION_TYPE", missionType);
         }
+        missionIntent.putExtra("SNOOZE_COUNT", snoozeCount);
+        
         missionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK 
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP 
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
