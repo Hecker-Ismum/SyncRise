@@ -127,8 +127,18 @@ public class AlarmSetupActivity extends AppCompatActivity {
         if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
+        
+        long triggerTimeMillis = calendar.getTimeInMillis();
 
-        scheduleAlarmClock(calendar.getTimeInMillis(), selectedMission, alarmId);
+        scheduleAlarmClock(triggerTimeMillis, selectedMission, alarmId);
+        
+        // Schedule bedtime reminder if it's a cycle alarm (remind 15 mins before bedtime)
+        if (isCycleAlarm) {
+            long bedTimeMillis = triggerTimeMillis - (long) (selectedCycleDurationHours * 60 * 60 * 1000) - (15 * 60 * 1000);
+            if (bedTimeMillis > System.currentTimeMillis()) {
+                scheduleBedtimeReminder(bedTimeMillis, alarmId);
+            }
+        }
 
         // Return result back to MainActivity
         Intent resultIntent = new Intent();
@@ -158,6 +168,26 @@ public class AlarmSetupActivity extends AppCompatActivity {
             } catch (SecurityException e) {
                 Toast.makeText(this, "Permission required for exact alarms!", Toast.LENGTH_LONG).show();
             }
+        }
+    }
+
+    private void scheduleBedtimeReminder(long bedtimeMillis, String alarmId) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        intent.putExtra("IS_REMINDER", true);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                (alarmId + "_reminder").hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        if (alarmManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                return; // Silently abort reminder if exact alarm permission isn't granted.
+            }
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, bedtimeMillis, pendingIntent);
         }
     }
 }

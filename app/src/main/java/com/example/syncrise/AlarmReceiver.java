@@ -20,6 +20,14 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "AlarmReceiver triggered!");
+        
+        boolean isReminder = intent.getBooleanExtra("IS_REMINDER", false);
+        
+        if (isReminder) {
+            showBedtimeReminder(context);
+            return;
+        }
+
         Toast.makeText(context, "SyncRise Alarm Triggered!", Toast.LENGTH_LONG).show();
 
         // Extract intent extras
@@ -80,6 +88,22 @@ public class AlarmReceiver extends BroadcastReceiver {
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
+        }
+    }
+
+    private void showBedtimeReminder(Context context) {
+        createNotificationChannel(context);
+        
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setContentTitle("Bedtime Reminder")
+                .setContentText("It's almost time for bed! Wind down now to hit your sleep cycles.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.notify(1002, builder.build());
         }
     }
 }
