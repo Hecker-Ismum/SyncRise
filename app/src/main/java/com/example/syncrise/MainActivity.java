@@ -191,9 +191,10 @@ public class MainActivity extends AppCompatActivity {
         });
         
         // Explicit Intent to open Sleep History Activity
-        binding.btnViewSleepLogs.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, SleepLogsActivity.class));
-        });
+        binding.btnViewSleepLogs.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SleepLogsActivity.class)));
+        
+        // Explicit Intent to open Analytics/Trends Activity
+        binding.btnViewAnalytics.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AnalyticsActivity.class)));
 
         // Query SleepLogProvider to demonstrate inter-component communication
         queryProvider();

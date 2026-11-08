@@ -43,6 +43,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".AnalyticsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".AlarmSetupActivity"
             android:exported="false" />
         <activity
