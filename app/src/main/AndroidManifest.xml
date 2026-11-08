@@ -50,6 +50,11 @@
         </service>
 
         <receiver
+            android:name=".SleepReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
             android:name=".AlarmReceiver"
             android:enabled="true"
             android:exported="false" />

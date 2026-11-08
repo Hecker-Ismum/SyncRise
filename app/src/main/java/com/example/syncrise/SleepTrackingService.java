@@ -14,6 +14,10 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.SleepSegmentRequest;
 
 public class SleepTrackingService extends Service implements SensorEventListener {
 
@@ -24,6 +28,8 @@ public class SleepTrackingService extends Service implements SensorEventListener
     private long startTimeMillis;
     private double targetCyclesHours;
 
+    private android.app.PendingIntent sleepReceiverPendingIntent;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -31,6 +37,14 @@ public class SleepTrackingService extends Service implements SensorEventListener
         if (sensorManager != null) {
             accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         }
+
+        Intent intent = new Intent(this, SleepReceiver.class);
+        sleepReceiverPendingIntent = android.app.PendingIntent.getBroadcast(
+                this,
+                0,
+                intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_MUTABLE
+        );
     }
 
     @Override
@@ -54,6 +68,15 @@ public class SleepTrackingService extends Service implements SensorEventListener
 
         if (accelerometer != null) {
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        // Subscribe to Google Play Services Sleep API
+        if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            ActivityRecognition.getClient(this).requestSleepSegmentUpdates(
+                    sleepReceiverPendingIntent,
+                    SleepSegmentRequest.getDefaultSleepSegmentRequest()
+            );
+            android.util.Log.d("SleepTrackingService", "Subscribed to Google Play Services Sleep API");
         }
 
         return START_STICKY;
@@ -104,6 +127,9 @@ public class SleepTrackingService extends Service implements SensorEventListener
         if (sensorManager != null) {
             sensorManager.unregisterListener(this);
         }
+        
+        // Unsubscribe from Sleep API
+        ActivityRecognition.getClient(this).removeSleepSegmentUpdates(sleepReceiverPendingIntent);
     }
 
     private void createNotificationChannel() {

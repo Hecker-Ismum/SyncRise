@@ -53,6 +53,9 @@ dependencies {
     // ML Kit Barcode Scanning (16 KB aligned)
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
+    // Google Play Services Location (Sleep API)
+    implementation("com.google.android.gms:play-services-location:21.4.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
