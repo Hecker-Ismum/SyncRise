@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         com.google.firebase.auth.FirebaseAuth auth = com.google.firebase.auth.FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
             com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
+            
+            // 1. Fetch Alarms
             db.collection("users")
                     .document(auth.getCurrentUser().getUid())
                     .collection("alarms")
@@ -69,7 +71,46 @@ public class MainActivity extends AppCompatActivity {
                         alarmAdapter.notifyDataSetChanged();
                     })
                     .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch alarms from Firebase", e));
+                    
+            // 2. Fetch Sleep Logs to calculate Today's Goal Progress
+            fetchTodaySleepProgress(db, auth.getCurrentUser().getUid());
         }
+    }
+
+    private void fetchTodaySleepProgress(com.google.firebase.firestore.FirebaseFirestore db, String uid) {
+        // Calculate start of today in millis
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        calendar.set(java.util.Calendar.MINUTE, 0);
+        calendar.set(java.util.Calendar.SECOND, 0);
+        calendar.set(java.util.Calendar.MILLISECOND, 0);
+        long startOfToday = calendar.getTimeInMillis();
+
+        db.collection("users")
+                .document(uid)
+                .collection("sleepLogs")
+                .whereGreaterThanOrEqualTo("endTimeMillis", startOfToday)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    long totalSleepMillisToday = 0;
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
+                        Long duration = doc.getLong("durationMillis");
+                        if (duration != null) {
+                            totalSleepMillisToday += duration;
+                        }
+                    }
+                    updateSleepProgressUI(totalSleepMillisToday);
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch today's sleep logs", e));
+    }
+
+    private void updateSleepProgressUI(long totalSleepMillisToday) {
+        // Goal is 8 hours (8 * 60 * 60 * 1000 = 28,800,000 ms)
+        double targetMillis = 8.0 * 60 * 60 * 1000;
+        int progressPercentage = (int) Math.min(100, (totalSleepMillisToday / targetMillis) * 100);
+        
+        binding.progressSleepGoal.setProgressCompat(progressPercentage, true);
+        binding.tvProgressText.setText(progressPercentage + "%");
     }
 
     @Override
