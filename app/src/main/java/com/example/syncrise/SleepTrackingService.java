@@ -29,6 +29,16 @@ public class SleepTrackingService extends Service implements SensorEventListener
     private double targetCyclesHours;
 
     private android.app.PendingIntent sleepReceiverPendingIntent;
+    
+    private android.content.BroadcastReceiver batteryReceiver = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
+                android.util.Log.d("SleepTrackingService", "Low battery detected. Stopping service to save power.");
+                stopSelf();
+            }
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -45,6 +55,9 @@ public class SleepTrackingService extends Service implements SensorEventListener
                 intent,
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_MUTABLE
         );
+        
+        // Register System Broadcast Receiver for Battery
+        registerReceiver(batteryReceiver, new android.content.IntentFilter(Intent.ACTION_BATTERY_LOW));
     }
 
     @Override
@@ -130,6 +143,13 @@ public class SleepTrackingService extends Service implements SensorEventListener
         
         // Unsubscribe from Sleep API
         ActivityRecognition.getClient(this).removeSleepSegmentUpdates(sleepReceiverPendingIntent);
+        
+        // Unregister system broadcast
+        try {
+            unregisterReceiver(batteryReceiver);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     private void createNotificationChannel() {

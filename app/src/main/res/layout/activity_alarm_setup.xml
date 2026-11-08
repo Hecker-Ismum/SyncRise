@@ -147,6 +147,32 @@
                 android:text="Morning Alarm" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Custom Ringtone Selector -->
+        <Button
+            android:id="@+id/btnPickRingtone"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Pick Custom Tone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilLabel" />
+
+        <TextView
+            android:id="@+id/tvSelectedRingtone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Default Alarm"
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toBottomOf="@id/btnPickRingtone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btnPickRingtone"
+            app:layout_constraintTop_toTopOf="@id/btnPickRingtone" />
+
         <!-- Mission Selection -->
         <TextView
             android:id="@+id/tvMissionLabel"
@@ -157,7 +183,7 @@
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilLabel" />
+            app:layout_constraintTop_toBottomOf="@id/btnPickRingtone" />
 
         <Spinner
             android:id="@+id/spinnerMission"

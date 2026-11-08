@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.syncrise.databinding.ActivityAlarmSetupBinding;
@@ -25,6 +27,29 @@ public class AlarmSetupActivity extends AppCompatActivity {
 
     private boolean isCycleAlarm = false;
     private double selectedCycleDurationHours = 0.0;
+    
+    private String selectedRingtoneUri = "";
+    
+    private final ActivityResultLauncher<Intent> ringtonePickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    android.net.Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        selectedRingtoneUri = uri.toString();
+                        
+                        // Query System Content Provider (MediaStore) for file name
+                        android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                        if (cursor != null && cursor.moveToFirst()) {
+                            int nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                            if (nameIndex != -1) {
+                                String name = cursor.getString(nameIndex);
+                                binding.tvSelectedRingtone.setText(name);
+                            }
+                            cursor.close();
+                        }
+                    }
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +67,12 @@ public class AlarmSetupActivity extends AppCompatActivity {
         if (initialTargetCycles > 0) {
             calculateAndSetCycleTime(initialTargetCycles);
         }
+
+        // Setup Pick Custom Ringtone via Content Provider
+        binding.btnPickRingtone.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+            ringtonePickerLauncher.launch(intent);
+        });
 
         // Sleep Cycle Assistant Buttons
         binding.btnCycle3.setOnClickListener(v -> calculateAndSetCycleTime(3.0));
@@ -110,6 +141,7 @@ public class AlarmSetupActivity extends AppCompatActivity {
                 alarmId,
                 timeStr,
                 labelStr,
+                selectedRingtoneUri,
                 isCycleAlarm,
                 selectedCycleDurationHours,
                 selectedMission,
@@ -130,7 +162,7 @@ public class AlarmSetupActivity extends AppCompatActivity {
         
         long triggerTimeMillis = calendar.getTimeInMillis();
 
-        scheduleAlarmClock(triggerTimeMillis, selectedMission, alarmId);
+        scheduleAlarmClock(triggerTimeMillis, selectedMission, alarmId, selectedRingtoneUri);
         
         // Schedule bedtime reminder if it's a cycle alarm (remind 15 mins before bedtime)
         if (isCycleAlarm) {
@@ -147,11 +179,12 @@ public class AlarmSetupActivity extends AppCompatActivity {
         finish();
     }
 
-    private void scheduleAlarmClock(long triggerTimeMillis, String missionType, String alarmId) {
+    private void scheduleAlarmClock(long triggerTimeMillis, String missionType, String alarmId, String ringtoneUri) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlarmReceiver.class);
         intent.putExtra("MISSION_TYPE", missionType);
         intent.putExtra("ALARM_ID", alarmId);
+        intent.putExtra("RINGTONE_URI", ringtoneUri);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 this,

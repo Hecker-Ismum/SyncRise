@@ -113,6 +113,29 @@ public class MainActivity extends AppCompatActivity {
         binding.tvProgressText.setText(progressPercentage + "%");
     }
 
+    private void fetchMotivationQuote() {
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL("https://api.adviceslip.com/advice");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) response.append(line);
+                in.close();
+
+                org.json.JSONObject jsonObject = new org.json.JSONObject(response.toString());
+                String advice = jsonObject.getJSONObject("slip").getString("advice");
+
+                runOnUiThread(() -> binding.tvMotivation.setText("💡 " + advice));
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> binding.tvMotivation.setText("💡 Rise and Shine!"));
+            }
+        }).start();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,9 +168,9 @@ public class MainActivity extends AppCompatActivity {
         
         // Mock Data for Alarms
         alarmList = new ArrayList<>();
-        alarmList.add(new AlarmModel("1", "06:30", "Morning Class", true, 4.5, "Math Problem", true));
-        alarmList.add(new AlarmModel("2", "07:00", "Workout", false, 0.0, "None", false));
-        alarmList.add(new AlarmModel("3", "08:15", "Weekend Wakeup", true, 6.0, "Barcode", true));
+        alarmList.add(new AlarmModel("1", "06:30", "Morning Class", "", true, 4.5, "Math Problem", true));
+        alarmList.add(new AlarmModel("2", "07:00", "Workout", "", false, 0.0, "None", false));
+        alarmList.add(new AlarmModel("3", "08:15", "Weekend Wakeup", "", true, 6.0, "Barcode", true));
         
         // Initialize Adapter with OnAlarmToggleListener
         alarmAdapter = new AlarmAdapter(alarmList, (alarm, isChecked) -> {
@@ -199,8 +222,14 @@ public class MainActivity extends AppCompatActivity {
         // Explicit Intent to open Soundscapes Activity
         binding.btnSoundscape.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SoundscapeActivity.class)));
 
+        // Profile Button
+        binding.btnProfile.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
+
         // Query SleepLogProvider to demonstrate inter-component communication
         queryProvider();
+        
+        // Fetch Motivation Quote (Networking/JSON API)
+        fetchMotivationQuote();
     }
 
     private void scheduleAlarmForModel(AlarmModel alarm) {

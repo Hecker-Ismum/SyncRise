@@ -152,7 +152,9 @@ public class MissionActivity extends AppCompatActivity {
     }
 
     private void startAlarmAudio() {
+        String customRingtoneUri = getIntent().getStringExtra("RINGTONE_URI");
         Uri[] uris = new Uri[]{
+                (customRingtoneUri != null && !customRingtoneUri.isEmpty()) ? Uri.parse(customRingtoneUri) : null,
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)

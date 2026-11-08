@@ -61,6 +61,10 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+
+    // Image Loading (Glide)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
     // MPAndroidChart for Analytics
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
