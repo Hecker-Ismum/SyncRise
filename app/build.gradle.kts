@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -55,6 +56,11 @@ dependencies {
 
     // Google Play Services Location (Sleep API)
     implementation("com.google.android.gms:play-services-location:21.4.0")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)

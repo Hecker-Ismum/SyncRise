@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.SuppressLint;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -28,9 +29,48 @@ public class MainActivity extends AppCompatActivity {
                         alarmAdapter.notifyItemInserted(alarmList.size() - 1);
                         binding.rvAlarms.smoothScrollToPosition(alarmList.size() - 1);
                         Toast.makeText(this, "Alarm set for " + newAlarm.getTime(), Toast.LENGTH_SHORT).show();
+                        
+                        saveAlarmToFirebase(newAlarm);
                     }
                 }
             });
+
+    private void saveAlarmToFirebase(AlarmModel alarm) {
+        com.google.firebase.auth.FirebaseAuth auth = com.google.firebase.auth.FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
+            db.collection("users")
+                    .document(auth.getCurrentUser().getUid())
+                    .collection("alarms")
+                    .document(alarm.getId())
+                    .set(alarm)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Alarm saved to Firebase"))
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to save alarm to Firebase", e));
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void fetchAlarmsFromFirebase() {
+        com.google.firebase.auth.FirebaseAuth auth = com.google.firebase.auth.FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
+            db.collection("users")
+                    .document(auth.getCurrentUser().getUid())
+                    .collection("alarms")
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        alarmList.clear();
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
+                            AlarmModel alarm = doc.toObject(AlarmModel.class);
+                            if (alarm != null) {
+                                alarmList.add(alarm);
+                            }
+                        }
+                        alarmAdapter.notifyDataSetChanged();
+                    })
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch alarms from Firebase", e));
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +90,13 @@ public class MainActivity extends AppCompatActivity {
             if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 androidx.core.app.ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
             }
+        }
+        
+        com.google.firebase.auth.FirebaseAuth auth = com.google.firebase.auth.FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
         }
 
         // Initialize RecyclerView
@@ -71,9 +118,13 @@ public class MainActivity extends AppCompatActivity {
                 cancelAlarmForModel(alarm);
                 Toast.makeText(MainActivity.this, "Alarm " + alarm.getTime() + " disabled", Toast.LENGTH_SHORT).show();
             }
+            saveAlarmToFirebase(alarm);
         });
         
         binding.rvAlarms.setAdapter(alarmAdapter);
+        
+        // Fetch Alarms from Firebase
+        fetchAlarmsFromFirebase();
 
         // Explicit Intent to AlarmSetupActivity using ActivityResultLauncher
         binding.btnCreateAlarm.setOnClickListener(v -> {

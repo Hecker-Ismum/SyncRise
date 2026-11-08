@@ -9,7 +9,12 @@ import android.util.Log;
 import com.google.android.gms.location.SleepClassifyEvent;
 import com.google.android.gms.location.SleepSegmentEvent;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SleepReceiver extends BroadcastReceiver {
     private static final String TAG = "SleepReceiver";
@@ -47,9 +52,28 @@ public class SleepReceiver extends BroadcastReceiver {
 
         try {
             context.getContentResolver().insert(SleepLogProvider.CONTENT_URI, values);
-            Log.d(TAG, "Sleep segment saved to database. Cycles: " + cyclesCompleted);
+            Log.d(TAG, "Sleep segment saved to local database.");
         } catch (Exception e) {
-            Log.e(TAG, "Failed to save sleep segment", e);
+            Log.e(TAG, "Failed to save sleep segment locally", e);
+        }
+        
+        // Also upload to Firebase Firestore if logged in
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            Map<String, Object> sleepData = new HashMap<>();
+            sleepData.put("startTimeMillis", event.getStartTimeMillis());
+            sleepData.put("endTimeMillis", event.getEndTimeMillis());
+            sleepData.put("durationMillis", durationMillis);
+            sleepData.put("cyclesCompleted", cyclesCompleted);
+            sleepData.put("status", event.getStatus());
+
+            db.collection("users")
+                .document(auth.getCurrentUser().getUid())
+                .collection("sleepLogs")
+                .add(sleepData)
+                .addOnSuccessListener(documentReference -> Log.d(TAG, "Sleep log uploaded to Firebase: " + documentReference.getId()))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to upload sleep log to Firebase", e));
         }
     }
 }
