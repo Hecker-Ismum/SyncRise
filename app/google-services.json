@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "485085820513",
+    "project_id": "syncrise-72a7b",
+    "storage_bucket": "syncrise-72a7b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485085820513:android:f48b2b7da9d5f988e85c20",
+        "android_client_info": {
+          "package_name": "com.example.syncrise"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuAt4ybzuUpPPptrqN6xmBAiz_FszrW-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

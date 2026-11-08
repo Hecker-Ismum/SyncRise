@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.SuppressLint;
+import android.annotation.SuppressLint;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
