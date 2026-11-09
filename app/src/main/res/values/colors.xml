@@ -2,4 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Dark Glassmorphism Palette -->
+    <color name="bg_dark">#0F172A</color>
+    <color name="card_dark">#1E293B</color>
+    <color name="card_stroke">#334155</color>
+    <color name="cyan_accent">#00F0FF</color>
+    <color name="blue_electric">#3B82F6</color>
+    <color name="purple_accent">#8B5CF6</color>
+    <color name="text_main">#F8FAFC</color>
+    <color name="text_sub">#94A3B8</color>
 </resources>

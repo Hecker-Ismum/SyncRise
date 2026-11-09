@@ -33,7 +33,7 @@ public class SleepCycleVisualizerView extends View {
 
     private void init() {
         paintLine = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintLine.setColor(Color.parseColor("#4A90E2")); // Sleepy blue tone
+        paintLine.setColor(Color.parseColor("#00F0FF")); // Neon cyan tone
         paintLine.setStyle(Paint.Style.STROKE);
         paintLine.setStrokeWidth(12f);
 

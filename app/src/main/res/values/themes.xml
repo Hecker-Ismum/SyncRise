@@ -1,8 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SyncRise" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Base application theme: Modern Dark Glassmorphism -->
+    <style name="Base.Theme.SyncRise" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/cyan_accent</item>
+        <item name="colorSecondary">@color/blue_electric</item>
+        <item name="android:windowBackground">@color/bg_dark</item>
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:navigationBarColor">@color/bg_dark</item>
     </style>
 
     <style name="Theme.SyncRise" parent="Base.Theme.SyncRise" />
