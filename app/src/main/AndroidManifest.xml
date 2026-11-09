@@ -84,6 +84,14 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name=".FCMService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name=".SleepLogProvider"
             android:authorities="com.example.syncrise.provider"

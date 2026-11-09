@@ -20,7 +20,7 @@ public class DemoDataSeeder {
         void onComplete(boolean success);
     }
 
-    public static void seedData(SeedCallback callback) {
+    public static void seedData(android.content.Context context, SeedCallback callback) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             if (callback != null) callback.onComplete(false);
@@ -68,6 +68,15 @@ public class DemoDataSeeder {
 
             String logId = "demo_log_" + i;
             batch.set(db.collection("users").document(uid).collection("sleepLogs").document(logId), logMap);
+            
+            // Also seed SQLite (SleepLogProvider)
+            if (context != null) {
+                android.content.ContentValues values = new android.content.ContentValues();
+                values.put("DATE", String.valueOf(endTime));
+                values.put("CYCLES_COMPLETED", cycles);
+                values.put("SCORE", 100);
+                context.getContentResolver().insert(android.net.Uri.parse("content://com.example.syncrise.provider/logs"), values);
+            }
         }
 
         batch.commit()

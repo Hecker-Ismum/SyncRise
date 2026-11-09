@@ -59,7 +59,7 @@ public class ProfileActivity extends AppCompatActivity {
         
         binding.btnSeedDemoData.setOnClickListener(v -> {
             binding.progressBarProfile.setVisibility(View.VISIBLE);
-            DemoDataSeeder.seedData(success -> {
+            DemoDataSeeder.seedData(this, success -> {
                 binding.progressBarProfile.setVisibility(View.GONE);
                 if (success) {
                     Toast.makeText(this, "Demo Data successfully loaded to Firebase!", Toast.LENGTH_LONG).show();

@@ -143,5 +143,22 @@ public class AnalyticsActivity extends AppCompatActivity {
         
         binding.barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xLabels));
         binding.barChart.invalidate(); // refresh chart
+        
+        // Calculate Sleep Debt
+        double totalHoursSlept = 0;
+        for (Double h : dailySleepMap.values()) {
+            totalHoursSlept += h;
+        }
+        
+        int daysAvailable = dailySleepMap.size();
+        double idealSleep = daysAvailable * 8.0;
+        double debt = idealSleep - totalHoursSlept;
+        
+        if (debt > 0) {
+            binding.tvSleepDebt.setText(String.format(Locale.getDefault(), "Current Sleep Debt: %.1f hrs", debt));
+        } else {
+            binding.tvSleepDebt.setText("Sleep Debt: 0 hrs (You're fully rested!)");
+            binding.tvSleepDebt.setTextColor(Color.parseColor("#3DDC84"));
+        }
     }
 }

@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                         if (queryDocumentSnapshots.isEmpty() && !isSeeding) {
                             isSeeding = true;
                             // Automatically seed demo data once if empty
-                            DemoDataSeeder.seedData(success -> {
+                            DemoDataSeeder.seedData(this, success -> {
                                 if (success) {
                                     db.collection("users")
                                             .document(uid)
@@ -256,6 +256,69 @@ public class MainActivity extends AppCompatActivity {
         
         // Fetch Motivation Quote (Networking/JSON API)
         fetchMotivationQuote();
+        
+        // Sleep Debt Verification
+        checkSleepDebtFromSQLite();
+    }
+
+    private void checkSleepDebtFromSQLite() {
+        new Thread(() -> {
+            long sevenDaysAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L);
+            android.net.Uri uri = android.net.Uri.parse("content://com.example.syncrise.provider/logs");
+            long totalSleepMillis = 0;
+            
+            try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int dateIndex = cursor.getColumnIndex("DATE");
+                    int cyclesIndex = cursor.getColumnIndex("CYCLES_COMPLETED");
+                    
+                    do {
+                        if (dateIndex != -1 && cyclesIndex != -1) {
+                            String dateStr = cursor.getString(dateIndex);
+                            try {
+                                long endTime = Long.parseLong(dateStr);
+                                if (endTime >= sevenDaysAgo) {
+                                    int cycles = cursor.getInt(cyclesIndex);
+                                    totalSleepMillis += (cycles * 90L * 60L * 1000L);
+                                }
+                            } catch (NumberFormatException ignored) {}
+                        }
+                    } while (cursor.moveToNext());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error querying SQLite for Sleep Debt", e);
+            }
+
+            double totalHoursSlept = totalSleepMillis / (1000.0 * 60 * 60);
+            double targetHours = 7 * 8.0; // 56 hours
+            double sleepDebt = targetHours - totalHoursSlept;
+
+            if (sleepDebt > 5.0) {
+                runOnUiThread(() -> sendSleepDebtNotification(sleepDebt));
+            }
+        }).start();
+    }
+
+    private void sendSleepDebtNotification(double debt) {
+        String channelId = "FCM_Channel";
+        android.app.NotificationManager notificationManager = (android.app.NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(channelId, "Cloud Notifications", android.app.NotificationManager.IMPORTANCE_DEFAULT);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        androidx.core.app.NotificationCompat.Builder builder = new androidx.core.app.NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle("Firebase Cloud Message - Alert")
+                .setContentText(String.format(java.util.Locale.getDefault(), "Sleep Debt detected: %.1f hrs! Please sleep earlier tonight.", debt))
+                .setAutoCancel(true);
+
+        if (notificationManager != null) {
+            notificationManager.notify(3001, builder.build());
+        }
     }
 
     private void scheduleAlarmForModel(AlarmModel alarm) {
