@@ -56,6 +56,19 @@ public class ProfileActivity extends AppCompatActivity {
 
         binding.btnSelectImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
         binding.btnUploadImage.setOnClickListener(v -> uploadImageToFirebase(user));
+        
+        binding.btnSeedDemoData.setOnClickListener(v -> {
+            binding.progressBarProfile.setVisibility(View.VISIBLE);
+            DemoDataSeeder.seedData(success -> {
+                binding.progressBarProfile.setVisibility(View.GONE);
+                if (success) {
+                    Toast.makeText(this, "Demo Data successfully loaded to Firebase!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, "Failed to load demo data.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
         binding.btnLogout.setOnClickListener(v -> {
             mAuth.signOut();
             Intent intent = new Intent(this, LoginActivity.class);

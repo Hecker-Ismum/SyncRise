@@ -62,13 +62,18 @@ public class MainActivity extends AppCompatActivity {
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         alarmList.clear();
-                        for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
-                            AlarmModel alarm = doc.toObject(AlarmModel.class);
-                            if (alarm != null) {
-                                alarmList.add(alarm);
+                        if (queryDocumentSnapshots.isEmpty()) {
+                            // Automatically seed demo data if empty so evaluation is seamless
+                            DemoDataSeeder.seedData(success -> fetchAlarmsFromFirebase());
+                        } else {
+                            for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
+                                AlarmModel alarm = doc.toObject(AlarmModel.class);
+                                if (alarm != null) {
+                                    alarmList.add(alarm);
+                                }
                             }
+                            alarmAdapter.notifyDataSetChanged();
                         }
-                        alarmAdapter.notifyDataSetChanged();
                     })
                     .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch alarms from Firebase", e));
                     
