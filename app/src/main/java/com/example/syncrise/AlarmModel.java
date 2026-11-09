@@ -12,13 +12,14 @@ public class AlarmModel implements Serializable {
     private double cycleDurationHours;
     private String missionType;
     private boolean isEnabled;
+    private boolean isSmartWakeEnabled;
 
     // No-argument constructor required for Firebase deserialization
     public AlarmModel() {
     }
 
     // Parameterized constructor
-    public AlarmModel(String id, String time, String label, String customRingtoneUri, boolean isCycleAlarm, double cycleDurationHours, String missionType, boolean isEnabled) {
+    public AlarmModel(String id, String time, String label, String customRingtoneUri, boolean isCycleAlarm, double cycleDurationHours, String missionType, boolean isEnabled, boolean isSmartWakeEnabled) {
         this.id = id;
         this.time = time;
         this.label = label;
@@ -27,6 +28,7 @@ public class AlarmModel implements Serializable {
         this.cycleDurationHours = cycleDurationHours;
         this.missionType = missionType;
         this.isEnabled = isEnabled;
+        this.isSmartWakeEnabled = isSmartWakeEnabled;
     }
 
     // Getters and Setters
@@ -92,5 +94,13 @@ public class AlarmModel implements Serializable {
 
     public void setEnabled(boolean enabled) {
         isEnabled = enabled;
+    }
+
+    public boolean isSmartWakeEnabled() {
+        return isSmartWakeEnabled;
+    }
+
+    public void setSmartWakeEnabled(boolean smartWakeEnabled) {
+        isSmartWakeEnabled = smartWakeEnabled;
     }
 }

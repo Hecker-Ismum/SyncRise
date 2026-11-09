@@ -194,9 +194,9 @@ public class MainActivity extends AppCompatActivity {
         
         // Mock Data for Alarms
         alarmList = new ArrayList<>();
-        alarmList.add(new AlarmModel("1", "06:30", "Morning Class", "", true, 4.5, "Math Problem", true));
-        alarmList.add(new AlarmModel("2", "07:00", "Workout", "", false, 0.0, "None", false));
-        alarmList.add(new AlarmModel("3", "08:15", "Weekend Wakeup", "", true, 6.0, "Barcode", true));
+        alarmList.add(new AlarmModel("1", "06:30", "Morning Class", "", true, 4.5, "Math Problem", true, true));
+        alarmList.add(new AlarmModel("2", "07:00", "Workout", "", false, 0.0, "None", false, false));
+        alarmList.add(new AlarmModel("3", "08:15", "Weekend Wakeup", "", true, 6.0, "Barcode", true, true));
         
         // Initialize Adapter with OnAlarmToggleListener
         alarmAdapter = new AlarmAdapter(alarmList, (alarm, isChecked) -> {

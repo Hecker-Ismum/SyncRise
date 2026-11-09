@@ -27,6 +27,8 @@ public class SleepTrackingService extends Service implements SensorEventListener
     
     private long startTimeMillis;
     private double targetCyclesHours;
+    private boolean isSmartWakeEnabled;
+    private long targetTimeMillis;
 
     private android.app.PendingIntent sleepReceiverPendingIntent;
     
@@ -76,6 +78,8 @@ public class SleepTrackingService extends Service implements SensorEventListener
 
         if (intent != null) {
             targetCyclesHours = intent.getDoubleExtra("TARGET_CYCLES", 0);
+            isSmartWakeEnabled = intent.getBooleanExtra("IS_SMART_WAKE", true);
+            targetTimeMillis = intent.getLongExtra("TARGET_TIME_MILLIS", 0);
         }
         startTimeMillis = System.currentTimeMillis();
 
@@ -104,20 +108,39 @@ public class SleepTrackingService extends Service implements SensorEventListener
             
             // Subtle movement calculation (simplified magnitude)
             double magnitude = Math.sqrt(x * x + y * y + z * z);
-            // Log magnitude to ensure it's not removed by optimizer
-            android.util.Log.d("SleepTrackingService", "Magnitude: " + magnitude);
-            // In a real app, track the variance of magnitude over time to detect REM/Light/Deep sleep
+            double delta = Math.abs(magnitude - SensorManager.GRAVITY_EARTH);
+            
+            long currentTime = System.currentTimeMillis();
 
-            long elapsedMillis = System.currentTimeMillis() - startTimeMillis;
+            // 1. Predictive Smart Wake Window Check (Within 30 minutes before target time)
+            if (isSmartWakeEnabled && targetTimeMillis > 0) {
+                long windowStartTime = targetTimeMillis - (30 * 60 * 1000L); // 30 min window
+
+                if (currentTime >= windowStartTime && currentTime < targetTimeMillis) {
+                    // Light sleep detected via movement spike (delta > 1.5 m/s^2)
+                    if (delta > 1.5) {
+                        android.util.Log.d("SleepTrackingService", "Predictive Smart Wake triggered early during Light Sleep! Delta: " + delta);
+                        
+                        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+                        alarmIntent.putExtra("MISSION_TYPE", "Smart Wake");
+                        alarmIntent.putExtra("SMART_WAKE_TRIGGERED", true);
+                        sendBroadcast(alarmIntent);
+                        
+                        stopSelf();
+                        return;
+                    }
+                }
+            }
+
+            long elapsedMillis = currentTime - startTimeMillis;
             long targetMillis = (long) (targetCyclesHours * 60 * 60 * 1000);
 
-            // When the target cycle time is reached, send broadcast to fire alarm
+            // 2. Standard Cycle Target Check
             if (targetMillis > 0 && elapsedMillis >= targetMillis) {
                 Intent alarmIntent = new Intent(this, AlarmReceiver.class);
                 alarmIntent.putExtra("MISSION_TYPE", "Movement Goal Reached");
                 sendBroadcast(alarmIntent);
                 
-                // Stop tracking once target is reached
                 stopSelf();
             }
         }

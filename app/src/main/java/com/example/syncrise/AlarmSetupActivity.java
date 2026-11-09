@@ -133,6 +133,7 @@ public class AlarmSetupActivity extends AppCompatActivity {
         String selectedMission = binding.spinnerMission.getSelectedItem() != null
                 ? binding.spinnerMission.getSelectedItem().toString()
                 : "None";
+        boolean isSmartWakeEnabled = binding.switchSmartWake.isChecked();
 
         String alarmId = UUID.randomUUID().toString();
 
@@ -145,7 +146,8 @@ public class AlarmSetupActivity extends AppCompatActivity {
                 isCycleAlarm,
                 selectedCycleDurationHours,
                 selectedMission,
-                true
+                true,
+                isSmartWakeEnabled
         );
 
         // Calculate trigger time in milliseconds

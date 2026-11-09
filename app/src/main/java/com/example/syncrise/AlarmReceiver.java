@@ -66,10 +66,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         createNotificationChannel(context);
 
+        boolean isSmartWake = intent.getBooleanExtra("SMART_WAKE_TRIGGERED", false);
+        String notifTitle = isSmartWake ? "SyncRise Smart Wake 🌅" : "SyncRise Alarm";
+        String notifText = isSmartWake ? "Woke you up during light sleep to prevent grogginess!" : "Wake up! Mission: " + (missionType != null ? missionType : "Default");
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                .setContentTitle("SyncRise Alarm")
-                .setContentText("Wake up! Mission: " + (missionType != null ? missionType : "Default"))
+                .setContentTitle(notifTitle)
+                .setContentText(notifText)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setFullScreenIntent(fullScreenPendingIntent, true)

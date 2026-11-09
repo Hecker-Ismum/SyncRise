@@ -192,6 +192,60 @@
             android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@id/tvMissionLabel" />
 
+        <!-- Smart Wake Switch Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSmartWake"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/card_dark"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintTop_toBottomOf="@id/spinnerMission">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvSmartWakeTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Predictive Smart Wake 🌅"
+                    android:textColor="@color/cyan_accent"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@id/switchSmartWake"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvSmartWakeDesc"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Triggers alarm within 30 mins before target time if light sleep (movement) is detected."
+                    android:textColor="@color/text_sub"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toStartOf="@id/switchSmartWake"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvSmartWakeTitle" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchSmartWake"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    app:thumbTint="@color/cyan_accent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Action Buttons -->
         <Button
             android:id="@+id/btnSaveAlarm"
@@ -202,7 +256,7 @@
             android:text="Save Alarm"
             app:layout_constraintEnd_toStartOf="@id/btnCancel"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/spinnerMission" />
+            app:layout_constraintTop_toBottomOf="@id/cardSmartWake" />
 
         <Button
             android:id="@+id/btnCancel"
