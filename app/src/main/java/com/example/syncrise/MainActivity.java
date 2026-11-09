@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     
     private AlarmAdapter alarmAdapter;
     private ArrayList<AlarmModel> alarmList;
+    private boolean isSeeding = false;
 
     private final androidx.activity.result.ActivityResultLauncher<Intent> alarmSetupLauncher =
             registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
@@ -52,19 +53,39 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NotifyDataSetChanged")
     private void fetchAlarmsFromFirebase() {
         com.google.firebase.auth.FirebaseAuth auth = com.google.firebase.auth.FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null) {
+        com.google.firebase.auth.FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
+            String uid = currentUser.getUid();
             com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
             
             // 1. Fetch Alarms
             db.collection("users")
-                    .document(auth.getCurrentUser().getUid())
+                    .document(uid)
                     .collection("alarms")
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         alarmList.clear();
-                        if (queryDocumentSnapshots.isEmpty()) {
-                            // Automatically seed demo data if empty so evaluation is seamless
-                            DemoDataSeeder.seedData(success -> fetchAlarmsFromFirebase());
+                        if (queryDocumentSnapshots.isEmpty() && !isSeeding) {
+                            isSeeding = true;
+                            // Automatically seed demo data once if empty
+                            DemoDataSeeder.seedData(success -> {
+                                if (success) {
+                                    db.collection("users")
+                                            .document(uid)
+                                            .collection("alarms")
+                                            .get()
+                                            .addOnSuccessListener(snapshots -> {
+                                                alarmList.clear();
+                                                for (com.google.firebase.firestore.DocumentSnapshot doc : snapshots) {
+                                                    AlarmModel alarm = doc.toObject(AlarmModel.class);
+                                                    if (alarm != null) {
+                                                        alarmList.add(alarm);
+                                                    }
+                                                }
+                                                alarmAdapter.notifyDataSetChanged();
+                                            });
+                                }
+                            });
                         } else {
                             for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
                                 AlarmModel alarm = doc.toObject(AlarmModel.class);
@@ -78,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch alarms from Firebase", e));
                     
             // 2. Fetch Sleep Logs to calculate Today's Goal Progress
-            fetchTodaySleepProgress(db, auth.getCurrentUser().getUid());
+            fetchTodaySleepProgress(db, uid);
         }
     }
 
