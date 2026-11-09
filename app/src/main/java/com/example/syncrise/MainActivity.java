@@ -254,14 +254,17 @@ public class MainActivity extends AppCompatActivity {
         // Query SleepLogProvider to demonstrate inter-component communication
         queryProvider();
         
+        // Manual Debt Analysis Trigger
+        binding.btnCheckSleepDebt.setOnClickListener(v -> checkSleepDebtFromSQLite(true));
+        
         // Fetch Motivation Quote (Networking/JSON API)
         fetchMotivationQuote();
         
         // Sleep Debt Verification
-        checkSleepDebtFromSQLite();
+        checkSleepDebtFromSQLite(false);
     }
 
-    private void checkSleepDebtFromSQLite() {
+    private void checkSleepDebtFromSQLite(boolean forceAlert) {
         new Thread(() -> {
             long sevenDaysAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L);
             android.net.Uri uri = android.net.Uri.parse("content://com.example.syncrise.provider/logs");
@@ -293,8 +296,13 @@ public class MainActivity extends AppCompatActivity {
             double targetHours = 7 * 8.0; // 56 hours
             double sleepDebt = targetHours - totalHoursSlept;
 
-            if (sleepDebt > 5.0) {
-                runOnUiThread(() -> sendSleepDebtNotification(sleepDebt));
+            if (sleepDebt > 5.0 || forceAlert) {
+                runOnUiThread(() -> {
+                    sendSleepDebtNotification(sleepDebt > 0 ? sleepDebt : 0);
+                    if (forceAlert) Toast.makeText(MainActivity.this, "Sleep Debt Notification Sent for Demo!", Toast.LENGTH_SHORT).show();
+                });
+            } else if (forceAlert) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "No sleep debt! You are well rested.", Toast.LENGTH_SHORT).show());
             }
         }).start();
     }
