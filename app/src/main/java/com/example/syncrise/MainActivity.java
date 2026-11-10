@@ -189,6 +189,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Sync last active timestamp to Firebase Realtime Database
+        com.google.firebase.database.FirebaseDatabase.getInstance()
+                .getReference("users/" + auth.getCurrentUser().getUid() + "/lastActive")
+                .setValue(System.currentTimeMillis());
+
         // Initialize RecyclerView
         binding.rvAlarms.setLayoutManager(new LinearLayoutManager(this));
         
