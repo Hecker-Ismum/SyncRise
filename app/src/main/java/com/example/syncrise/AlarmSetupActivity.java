@@ -130,6 +130,9 @@ public class AlarmSetupActivity extends AppCompatActivity {
         String labelStr = binding.etAlarmLabel.getText() != null && !binding.etAlarmLabel.getText().toString().trim().isEmpty()
                 ? binding.etAlarmLabel.getText().toString().trim()
                 : "Alarm";
+        String reminderStr = binding.etReminder.getText() != null && !binding.etReminder.getText().toString().trim().isEmpty()
+                ? binding.etReminder.getText().toString().trim()
+                : "";
         String selectedMission = binding.spinnerMission.getSelectedItem() != null
                 ? binding.spinnerMission.getSelectedItem().toString()
                 : "None";
@@ -146,6 +149,7 @@ public class AlarmSetupActivity extends AppCompatActivity {
                 isCycleAlarm,
                 selectedCycleDurationHours,
                 selectedMission,
+                reminderStr,
                 true,
                 isSmartWakeEnabled
         );
@@ -164,7 +168,7 @@ public class AlarmSetupActivity extends AppCompatActivity {
         
         long triggerTimeMillis = calendar.getTimeInMillis();
 
-        scheduleAlarmClock(triggerTimeMillis, selectedMission, alarmId, selectedRingtoneUri);
+        scheduleAlarmClock(triggerTimeMillis, selectedMission, reminderStr, alarmId, selectedRingtoneUri);
         
         // Schedule bedtime reminder if it's a cycle alarm (remind 15 mins before bedtime)
         if (isCycleAlarm) {
@@ -181,12 +185,13 @@ public class AlarmSetupActivity extends AppCompatActivity {
         finish();
     }
 
-    private void scheduleAlarmClock(long triggerTimeMillis, String missionType, String alarmId, String ringtoneUri) {
+    private void scheduleAlarmClock(long triggerTimeMillis, String missionType, String reminderNote, String alarmId, String ringtoneUri) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlarmReceiver.class);
         intent.putExtra("MISSION_TYPE", missionType);
         intent.putExtra("ALARM_ID", alarmId);
         intent.putExtra("RINGTONE_URI", ringtoneUri);
+        intent.putExtra("REMINDER_NOTE", reminderNote);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 this,

@@ -32,9 +32,9 @@ public class DemoDataSeeder {
         WriteBatch batch = db.batch();
 
         // 1. Realistic Demo Alarms
-        AlarmModel alarm1 = new AlarmModel(UUID.randomUUID().toString(), "06:30", "Morning Class", "", true, 4.5, "Math Problem", true, true);
-        AlarmModel alarm2 = new AlarmModel(UUID.randomUUID().toString(), "07:45", "Morning Gym", "", true, 6.0, "Barcode", true, true);
-        AlarmModel alarm3 = new AlarmModel(UUID.randomUUID().toString(), "09:00", "Weekend Wakeup", "", true, 7.5, "None", false, false);
+        AlarmModel alarm1 = new AlarmModel(UUID.randomUUID().toString(), "06:30", "Morning Class", "", true, 4.5, "Math Problem", "Drink Water!", true, true);
+        AlarmModel alarm2 = new AlarmModel(UUID.randomUUID().toString(), "07:45", "Morning Gym", "", true, 6.0, "Barcode", "Bring towel", true, true);
+        AlarmModel alarm3 = new AlarmModel(UUID.randomUUID().toString(), "09:00", "Weekend Wakeup", "", true, 7.5, "None", "", false, false);
 
         batch.set(db.collection("users").document(uid).collection("alarms").document(alarm1.getId()), alarm1);
         batch.set(db.collection("users").document(uid).collection("alarms").document(alarm2.getId()), alarm2);

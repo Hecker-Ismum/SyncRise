@@ -11,6 +11,7 @@ public class AlarmModel implements Serializable {
     private boolean isCycleAlarm;
     private double cycleDurationHours;
     private String missionType;
+    private String reminder;
     private boolean isEnabled;
     private boolean isSmartWakeEnabled;
 
@@ -19,7 +20,7 @@ public class AlarmModel implements Serializable {
     }
 
     // Parameterized constructor
-    public AlarmModel(String id, String time, String label, String customRingtoneUri, boolean isCycleAlarm, double cycleDurationHours, String missionType, boolean isEnabled, boolean isSmartWakeEnabled) {
+    public AlarmModel(String id, String time, String label, String customRingtoneUri, boolean isCycleAlarm, double cycleDurationHours, String missionType, String reminder, boolean isEnabled, boolean isSmartWakeEnabled) {
         this.id = id;
         this.time = time;
         this.label = label;
@@ -27,6 +28,7 @@ public class AlarmModel implements Serializable {
         this.isCycleAlarm = isCycleAlarm;
         this.cycleDurationHours = cycleDurationHours;
         this.missionType = missionType;
+        this.reminder = reminder;
         this.isEnabled = isEnabled;
         this.isSmartWakeEnabled = isSmartWakeEnabled;
     }
@@ -86,6 +88,14 @@ public class AlarmModel implements Serializable {
 
     public void setMissionType(String missionType) {
         this.missionType = missionType;
+    }
+
+    public String getReminder() {
+        return reminder;
+    }
+
+    public void setReminder(String reminder) {
+        this.reminder = reminder;
     }
 
     public boolean isEnabled() {

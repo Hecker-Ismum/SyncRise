@@ -84,6 +84,12 @@ public class MissionActivity extends AppCompatActivity {
         }
 
         binding.tvMissionTitle.setText("Mission: " + missionType);
+        
+        String reminder = getIntent().getStringExtra("REMINDER_NOTE");
+        if (reminder != null && !reminder.trim().isEmpty()) {
+            binding.tvReminder.setVisibility(View.VISIBLE);
+            binding.tvReminder.setText("Reminder: " + reminder);
+        }
 
         if ("Barcode".equalsIgnoreCase(missionType)) {
             setupBarcodeMission();

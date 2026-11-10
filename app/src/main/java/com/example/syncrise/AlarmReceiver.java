@@ -33,6 +33,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         // Extract intent extras
         String missionType = intent.getStringExtra("MISSION_TYPE");
         String ringtoneUri = intent.getStringExtra("RINGTONE_URI");
+        String reminderNote = intent.getStringExtra("REMINDER_NOTE");
         int snoozeCount = intent.getIntExtra("SNOOZE_COUNT", 0);
 
         // Prepare MissionActivity intent
@@ -42,6 +43,9 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
         if (ringtoneUri != null) {
             missionIntent.putExtra("RINGTONE_URI", ringtoneUri);
+        }
+        if (reminderNote != null) {
+            missionIntent.putExtra("REMINDER_NOTE", reminderNote);
         }
         missionIntent.putExtra("SNOOZE_COUNT", snoozeCount);
         
@@ -68,12 +72,17 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         boolean isSmartWake = intent.getBooleanExtra("SMART_WAKE_TRIGGERED", false);
         String notifTitle = isSmartWake ? "SyncRise Smart Wake 🌅" : "SyncRise Alarm";
-        String notifText = isSmartWake ? "Woke you up during light sleep to prevent grogginess!" : "Wake up! Mission: " + (missionType != null ? missionType : "Default");
+        
+        String missionText = missionType != null ? missionType : "Default";
+        String reminderText = (reminderNote != null && !reminderNote.trim().isEmpty()) ? "\nReminder: " + reminderNote : "";
+        
+        String notifText = isSmartWake ? "Woke you up early during light sleep!" + reminderText : "Wake up! Mission: " + missionText + reminderText;
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
                 .setContentTitle(notifTitle)
                 .setContentText(notifText)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(notifText)) // Allows multi-line for reminder
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setFullScreenIntent(fullScreenPendingIntent, true)

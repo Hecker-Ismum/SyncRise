@@ -55,6 +55,12 @@ public class SleepLogAdapter extends RecyclerView.Adapter<SleepLogAdapter.SleepL
             long hours = durationMinutes / 60;
             long mins = durationMinutes % 60;
             binding.tvDuration.setText(hours + "h " + mins + "m");
+            
+            itemView.setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(itemView.getContext(), SleepQualityActivity.class);
+                intent.putExtra("DURATION_MILLIS", log.getDurationMillis());
+                itemView.getContext().startActivity(intent);
+            });
         }
     }
 }

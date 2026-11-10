@@ -50,6 +50,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".SleepQualityActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ProfileActivity"
             android:exported="false" />
 
